@@ -1,0 +1,18 @@
+{
+  "name": "telegramBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Rozinov Sasha <Sasha7971182@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^5.12.10",
+    "node-telegram-bot-api": "^0.53.0",
+    "nodemon": "^2.0.7"
+  }
+}
