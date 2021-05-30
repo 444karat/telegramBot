@@ -73,7 +73,7 @@ async function start() {
                 console.log("уже есть");
             }
             else{
-                const user = new UsersDB({idChat});
+                const user = new UsersDB({id:idChat});
                 await user.save();
             }
         }
