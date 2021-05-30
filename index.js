@@ -13,7 +13,7 @@ const button_game ={
     })
 };
 const UserScheme = new mongo.Schema({
-    id: {type: Number, unique: true},
+    id: {type: Number, unique : true, required: true},
     win: {type: Number, unique: false, default : 0},
     lose:{type: Number, unique: false,default : 0},
     draw:{type: Number, unique: false, default : 0}
@@ -25,12 +25,12 @@ const keyMap = new Map([
     ['3', "Бумага"]
 ]);
 let chats  = {};
-let WLD = {};
+/*let WLD = {};
 function O() {
     this.win = 0;
     this.lose = 0;
     this.def = 0;
-}
+}*/
 
 async function logicGame(idChat, flag) {
     let choose = Math.floor(Math.random() * 3) + 1;
@@ -48,8 +48,6 @@ async function start() {
     catch (e) {
         console.log(e);
     }
-
-
     bot.setMyCommands(
         [
             {command: '/start', description: "Правила + приветтствие"},
@@ -59,29 +57,33 @@ async function start() {
     );
     bot.addListener("message", async mes => {
         const idChat = mes.chat.id;
-
-        var rez = new O();
+       // var rez = new O();
         if ( mes.text == "/start"){
 
 
-            WLD[idChat] = rez;
+           // WLD[idChat] = rez;
             await  bot.sendMessage(idChat,"привет,игра : Камень, ножницы, бумага\n" +
             "Правила:\n" +
             "Бумага побеждает камень \n" +
             "Ножницы побеждают бумагу \n" +
             "Камень побеждает ножницы  \n to start press over here /game" );
 
-            //if (UsersDB.findOne({id: idChat}))
+            const ceckUser = await   UsersDB.findOne( {id: idChat});
+            if (ceckUser){
+                console.log("уже есть");
+            }
+            else{
+                const user = new UsersDB({idChat});
+                await user.save();
+            }
         }
         else if ( mes.text == "/game"){
             await logicGame(idChat, true);
         }
         else if( mes.text == "/result"){
-           /* console.log(UsersDB.findOne({id:idChat}, function (err, doc){
-                console.log(doc);
-            }));*/
-            await bot.sendMessage(idChat, `win: ${WLD[idChat].win} lose:${WLD[idChat].lose} draw: ${WLD[idChat].def}`);
-
+            const rezUser = await   UsersDB.findOne( {id: idChat});
+            await bot.sendMessage(idChat, `win: ${rezUser.win} lose:${rezUser.lose} draw: ${rezUser.draw}`);
+            //await bot.sendMessage(idChat, `win: ${WLD[idChat].win} lose:${WLD[idChat].lose} draw: ${WLD[idChat].def}`);
         }
         else{
             await bot.sendMessage(idChat, "?");
@@ -91,31 +93,28 @@ async function start() {
     bot.addListener('callback_query',async mes=> {
         const idChat = mes.message.chat.id;
         const data = mes.data;
-
-
         logicGame(idChat, false);
         await bot.sendMessage(idChat, `u: ${keyMap.get(data)} bot: ${keyMap.get(String(chats[idChat]))}` );
 
-        rez = WLD[idChat];
-        console.log(idChat , rez);
+        //rez = WLD[idChat];
+        //console.log(idChat , rez);
 
         if (data == chats[idChat]){
-           // await UsersDB.updateOne({id:idChat}, {$inc: {draw: 1}});
-
-            rez.def++;
-            WLD[idChat] = rez;
+            await UsersDB.updateOne({id:idChat}, {$inc: {draw: 1}});
+            //rez.def++;
+            //WLD[idChat] = rez;
             await bot.sendMessage(idChat, "Ничья", button_game);
         }
         if( (data == 1 && chats[idChat] == 2) || (data == 2 && chats[idChat] == 3) || (data == 3 && chats[idChat] == 1)){
-            //await UsersDB.updateOne({id:idChat}, {$inc: {win: 1}});
-            rez.win++;
-            WLD[idChat] =  rez;
+            await UsersDB.updateOne({id:idChat}, {$inc: {win: 1}});
+            //rez.win++;
+            //WLD[idChat] =  rez;
             await bot.sendMessage(idChat, "Победа" , button_game);
         }
         if( (data == 1 && chats[idChat] == 3) || (data == 2 && chats[idChat]) == 1 || (data == 3 && chats[idChat] == 2)){
-           // await UsersDB.updateOne({id:idChat}, {$inc: {lose: 1}});
-            rez.lose++;
-            WLD[idChat] = rez;
+            await UsersDB.updateOne({id:idChat}, {$inc: {lose: 1}});
+           // rez.lose++;
+           // WLD[idChat] = rez;
             await bot.sendMessage(idChat, "Проиграл", button_game);
         }
     })
